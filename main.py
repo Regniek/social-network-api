@@ -3,13 +3,14 @@ from optparse import Option
 from uuid import UUID
 from datetime import date
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 # Pydantic
 from pydantic import BaseModel
 from pydantic import EmailStr
 from pydantic import Field
 # FastAPI
 from fastapi import FastAPI
+from fastapi import status
 
 app = FastAPI()
 
@@ -37,6 +38,14 @@ class User(UserBase):
     max_length=50
   )
   birth_date: Optional[date] = Field(default=None)
+
+class UserRegister(User):
+  password: str = Field(
+  ...,
+  min_length=8,
+  max_length=64
+)
+
 class Tweet(BaseModel):
   tweet_id: UUID = Field(...)
   content: str = Field(
@@ -48,7 +57,134 @@ class Tweet(BaseModel):
   updated_at: Optional[datetime] = Field(default=None)
   by: User = Field(...)
 
+# Path Operations
 
-@app.get("/")
-def home():
+## Users
+
+@app.post(
+  path="/sign-up",
+  response_model= User,
+  status_code=status.HTTP_201_CREATED,
+  summary="Register a User",
+  tags=["User"]
+)
+def sign_up():
+  """
+  Sign up user
+
+  This path operation register a user in the app
+
+  Parameters:
+    - Request body parameter:
+      - user: UserRegister
+    
+    Returns a json with the basic information:
+      - user_id: UUID
+      - email: EmailStr
+      - first_name: str
+      - last_name: str
+      - birth_date: str 
+  """
+  pass
+
+@app.post(
+  path="/login",
+  response_model= User,
+  status_code=status.HTTP_200_OK,
+  summary="Login a User",
+  tags=["User"]
+)
+def login():
+  pass
+
+@app.get(
+  path="/users",
+  response_model= List[User],
+  status_code=status.HTTP_200_OK,
+  summary="Show all users",
+  tags=["User"]
+)
+def show_all_users():
+  pass
+
+@app.get(
+  path="/users/{user_id}",
+  response_model= User,
+  status_code=status.HTTP_200_OK,
+  summary="Show user",
+  tags=["User"]
+)
+def show_user():
+  pass
+
+@app.delete(
+  path="/users/{user_id}/delete",
+  response_model= User,
+  status_code=status.HTTP_200_OK,
+  summary="Delete user",
+  tags=["User"]
+)
+def delete_user():
+  pass  
+
+@app.put(
+  path="/users/{user_id}/update",
+  response_model= User,
+  status_code=status.HTTP_200_OK,
+  summary="Update user",
+  tags=["User"]
+)
+def update_user():
+  pass  
+
+## Tweets
+
+@app.get(
+  path="/",
+  response_model= List[Tweet],
+  status_code=status.HTTP_200_OK,
+  summary="Show all tweets",
+  tags=["Tweets"]
+)
+def show_all_tweets():
   return { "FakeNews API":"Working" }
+
+@app.post(
+  path="/tweets",
+  response_model= Tweet,
+  status_code=status.HTTP_201_CREATED,
+  summary="Post a tweet",
+  tags=["Tweets"]
+)
+def create_tweet():
+  pass
+
+@app.get(
+  path="/tweets/{tweet_id}",
+  response_model= Tweet,
+  status_code=status.HTTP_200_OK,
+  summary="Show a tweet",
+  tags=["Tweets"]
+)
+def show_tweet():
+  pass
+
+@app.delete(
+  path="/tweets/{tweet_id}/delete",
+  response_model= Tweet,
+  status_code=status.HTTP_200_OK,
+  summary="Delete a tweet",
+  tags=["Tweets"]
+)
+def delete_tweet():
+  pass
+
+@app.put(
+  path="/tweets/{tweet_id}/update",
+  response_model= Tweet,
+  status_code=status.HTTP_200_OK,
+  summary="Update a tweet",
+  tags=["Tweets"]
+)
+def update_tweet():
+  pass
