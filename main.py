@@ -1,16 +1,16 @@
 # Python
-from optparse import Option
 from uuid import UUID
 from datetime import date
 from datetime import datetime
 from typing import Optional, List
+import json
 # Pydantic
 from pydantic import BaseModel
 from pydantic import EmailStr
 from pydantic import Field
 # FastAPI
 from fastapi import FastAPI
-from fastapi import status
+from fastapi import status,Body
 
 app = FastAPI()
 
@@ -68,7 +68,7 @@ class Tweet(BaseModel):
   summary="Register a User",
   tags=["User"]
 )
-def sign_up():
+def sign_up(user: UserRegister = Body(...)):
   """
   Sign up user
 
@@ -83,9 +83,17 @@ def sign_up():
       - email: EmailStr
       - first_name: str
       - last_name: str
-      - birth_date: str 
+      - birth_date: datetime
   """
-  pass
+  with open("users.json","r+", encoding="UTF-8") as f:
+    results = json.loads(f.read())
+    user_dict = user.dict()
+    user_dict["user_id"] = str(user_dict["user_id"])
+    user_dict["birth_date"] = str(user_dict["birth_date"])
+    results.append(user_dict)
+    f.seek(0)
+    f.write(json.dumps(results))
+    return user
 
 @app.post(
   path="/login",
@@ -105,7 +113,9 @@ def login():
   tags=["User"]
 )
 def show_all_users():
-  pass
+  with open("users.json","r", encoding="UTF-8") as f:
+    results = json.loads(f.read())
+    return results
 
 @app.get(
   path="/users/{user_id}",
@@ -147,7 +157,9 @@ def update_user():
   tags=["Tweets"]
 )
 def show_all_tweets():
-  return { "FakeNews API":"Working" }
+  with open("tweets.json","r", encoding="UTF-8") as f:
+    results = json.loads(f.read())
+    return results
 
 @app.post(
   path="/tweets",
@@ -156,8 +168,19 @@ def show_all_tweets():
   summary="Post a tweet",
   tags=["Tweets"]
 )
-def create_tweet():
-  pass
+def create_tweet(tweet: Tweet = Body(...)):
+  with open("tweets.json","r+", encoding="UTF-8") as f:
+    results = json.loads(f.read())
+    tweet_dict = tweet.dict()
+    tweet_dict["tweet_id"] = str(tweet_dict["tweet_id"])
+    tweet_dict["created_at"] = str(tweet_dict["created_at"])
+    tweet_dict["updated_at"] = str(tweet_dict["updated_at"])
+    tweet_dict["by"]["user_id"] = str(tweet_dict["by"]["user_id"])
+    tweet_dict["by"]["birth_date"] = str(tweet_dict["by"]["birth_date"])
+    results.append(tweet_dict)
+    f.seek(0)
+    f.write(json.dumps(results))
+    return tweet
 
 @app.get(
   path="/tweets/{tweet_id}",
